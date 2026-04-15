@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:4.4
+    volumes:
+      - mongo-data:/data/db
+
+  pritunl:
+    image: jippi/pritunl:latest
+    privileged: true
+    ports:
+      - "80:80"
+      - "443:443"
+      - "1194:1194/udp"
+    volumes:
+      - pritunl-data:/var/lib/pritunl
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:
+  pritunl-data:
