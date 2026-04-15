@@ -21,14 +21,16 @@ pipeline {
         }
         stage('Push Image') {
             steps {
-                withCredentials([string(credentialsId: 'dockerhub-password', variable: 'PASS')]) {
-                    sh 'echo $PASS | docker login -u khadi123 --password-stdin'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-password', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
                     sh 'docker push $DOCKER_IMAGE'
                 }
             }
         }
         stage('Run Container') {
             steps {
+                sh 'docker stop khadidja-flask || true'
+                sh 'docker rm khadidja-flask || true'
                 sh 'docker run -d -p 5000:5000 --name khadidja-flask $DOCKER_IMAGE'
             }
         }
