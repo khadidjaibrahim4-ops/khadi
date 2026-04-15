@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_IMAGE = "khadi123/khadidja-flask-app"
+    }
+    stages {
+        stage('Clone') {
+            steps {
+                git branch: 'main', url: 'https://github.com/khadidjaibrahim4-ops/khadi.git'
+            }
+        }
+        stage('Build Image') {
+            steps {
+                sh 'docker build -t khadidja-flask-app .'
+            }
+        }
+        stage('Tag Image') {
+            steps {
+                sh 'docker tag khadidja-flask-app $DOCKER_IMAGE'
+            }
+        }
+        stage('Push Image') {
+            steps {
+                withCredentials([string(credentialsId: 'dockerhub-password', variable: 'PASS')]) {
+                    sh 'echo $PASS | docker login -u khadi123 --password-stdin'
+                    sh 'docker push $DOCKER_IMAGE'
+                }
+            }
+        }
+        stage('Run Container') {
+            steps {
+                sh 'docker run -d -p 5000:5000 --name khadidja-flask $DOCKER_IMAGE'
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline terminé avec succès ✅'
+        }
+        failure {
+            echo 'Pipeline échoué ❌'
+        }
+    }
+}
